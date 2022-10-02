@@ -1,48 +1,78 @@
 ﻿@page "/fetchdata"
-
-<PageTitle>Weather forecast</PageTitle>
-
 @using MyForum.Data
-@inject WeatherForecastService ForecastService
+@using MyForum.Data.MyForum
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@*
+    Using OwningComponentBase ensures that the service and related services
+    that share its scope are disposed with the component.
+    Otherwise DbContext in ForecastService will live for the life of the
+    connection, which may be problematic if clients stay
+    connected for a long time.
+    We access WeatherForecastService using @Service
+*@
+@inherits OwningComponentBase<MyForumService>
+<h1>Posts</h1>
+<!-- AuthorizeView allows us to only show sections of the page -->
+<!-- based on the security on the current user -->
+<AuthorizeView>
+    <!-- Show this section if the user is logged in -->
+    <Authorized>
+        <h4>Hello, @context.User.Identity?.Name!</h4>
+        @if ( forumposts == null)
+        {
+            <!-- Show this if the current user has no data... yet... -->
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>                        
+                        <th>Title</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var post in forumposts)
+                    {
+                        <tr>
+                            <td><h4>@post.Title</h4></td>
+                            <td>@post.Date?.ToShortDateString()</td>            
+                        </tr>
+                        <tr>
+                            <td colspan="2">@post.Content</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </Authorized>
+    <!-- Show this section if the user is not logged in -->
+    <NotAuthorized>
+        <p>You're not signed in.</p>
+    </NotAuthorized>
+</AuthorizeView>
 
-<h1>Weather forecast</h1>
-
-<p>This component demonstrates fetching data from a service.</p>
-
-@if (forecasts == null)
+@code
 {
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-
-@code {
-    private WeatherForecast[]? forecasts;
-
+    // AuthenticationState is available as a CascadingParameter
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+    List<Posts> forumposts = new List<Posts>();
+    private string UserIdentityName = "";
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+        // Get the current user
+        if (authenticationStateTask != null)
+        {
+            var user = (await authenticationStateTask).User;
+            if (user.Identity != null)
+            {
+                UserIdentityName = user.Identity.Name ?? "";
+            }
+        }
+        // Get the forecasts for the current user
+        // We access WeatherForecastService using @Service
+        forumposts = await @Service.GetPostsAsync(UserIdentityName);
     }
 }

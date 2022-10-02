@@ -20,7 +20,16 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-builder.Services.AddSingleton<WeatherForecastService>();
+
+// Scoped creates an instance for each user
+builder.Services.AddScoped<MyForumService>();
+
+// Read the connection string from the appsettings.json file
+// Set the database connection for the ForumContext
+builder.Services.AddDbContext<MyForum.Data.MyForum.ForumContext>(options =>
+options.UseSqlServer(
+    builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 var app = builder.Build();
 
