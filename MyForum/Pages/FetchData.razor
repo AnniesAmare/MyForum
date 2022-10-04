@@ -125,6 +125,8 @@
         // Open the Popup
         ShowPopup = true;
     }
+
+    //Edit an existing post
     void EditPost(Posts post)
     {
         // Set the selected post
@@ -134,7 +136,7 @@
         ShowPopup = true;
     }
 
-
+    //Save a post (after a new post or edit post)
     async Task SavePost()
     {
         // Close the Popup
@@ -157,8 +159,19 @@
             // This is an update
             var result =
             @Service.UpdatePostsAsync(objPosts);
-
         }
+        // Get the posts for the current user
+        forumposts =
+        await @Service.GetPostsAsync(UserIdentityName);
+    }
+
+    //Delete a post
+    async Task DeletePost()
+    {
+        // Close the Popup
+        ShowPopup = false;
+        // Delete the post
+        var result = @Service.DeletePostAsync(objPosts);
         // Get the posts for the current user
         forumposts =
         await @Service.GetPostsAsync(UserIdentityName);
@@ -195,6 +208,14 @@
                         @onclick="SavePost">
                         Save
                     </button>&nbsp;
+                    @if (objPosts.Pid > 0)
+                    {
+                        <!-- Button to delete the post -->
+                        <button class="btn btn-danger"
+                        @onclick="DeletePost">
+                            Delete
+                        </button>
+                    }
                 </div>
             </div>
         </div>

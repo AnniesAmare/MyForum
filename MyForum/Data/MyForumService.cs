@@ -70,7 +70,24 @@ namespace MyForum.Data
             }
             return Task.FromResult(true);
         }
-
+        public Task<bool>
+        DeletePostAsync(Posts objPosts)
+        {
+            var ExistingPosts =
+                _context.Posts
+                .Where(x => x.Pid == objPosts.Pid)
+                .FirstOrDefault();
+            if (ExistingPosts != null)
+            {
+                _context.Posts.Remove(ExistingPosts);
+                _context.SaveChanges();
+            }
+            else
+            {
+                return Task.FromResult(false);
+            }
+            return Task.FromResult(true);
+        }
 
 
 
