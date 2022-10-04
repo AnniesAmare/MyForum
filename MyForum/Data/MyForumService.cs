@@ -13,6 +13,7 @@ namespace MyForum.Data
         {
             _context = context;
         }
+        //Fetch posts that are created by the current user
         public async Task<List<Posts>>
             GetPostsAsync(string strCurrentUser)
         {
@@ -24,6 +25,7 @@ namespace MyForum.Data
                  // Use ToListAsync to avoid blocking a thread
                  .AsNoTracking().ToListAsync();
         }
+        //Fetch posts that are created by other people
         public async Task<List<Posts>>
             GetOtherPostsAsync(string strCurrentUser)
         {
@@ -35,18 +37,43 @@ namespace MyForum.Data
                  // Use ToListAsync to avoid blocking a thread
                  .AsNoTracking().ToListAsync();
         }
+        //Create a post
+        public Task<Posts>
+         CreatePostAsync(Posts objPosts)
+        {
+            _context.Posts.Add(objPosts);
+            _context.SaveChanges();
+            return Task.FromResult(objPosts);
+        }
+        //Edit a post
+        public Task<bool>
+            UpdatePostsAsync(Posts objPosts)
+        {
+            var ExistingPosts =
+                _context.Posts
+                .Where(x => x.Pid == objPosts.Pid)
+                .FirstOrDefault();
+            if (ExistingPosts != null)
+            {
+                ExistingPosts.Date =
+                    objPosts.Date;
+                ExistingPosts.Title =
+                    objPosts.Title;
+                ExistingPosts.Content =
+                    objPosts.Content;
+
+                _context.SaveChanges();
+            }
+            else
+            {
+                return Task.FromResult(false);
+            }
+            return Task.FromResult(true);
+        }
 
 
-        /* Function to get all posts
-                public async Task<List<Posts>>
-                    GetPostsAsync2()
-                {
-                    // Get Posts
-                    return await _context.Posts
-                         // Use AsNoTracking to disable EF change tracking
-                         // Use ToListAsync to avoid blocking a thread
-                         .AsNoTracking().ToListAsync();
-                }
-        */
+
+
     }
+
 }

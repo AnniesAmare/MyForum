@@ -30,31 +30,51 @@
                     <tr>                        
                         <th>Title</th>
                         <th>Date</th>
+                        <th>Username</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
+                    @*The posts that the logged in user owns*@
                     @foreach (var post in forumposts)
                     {
                         <tr>
                             <td><h4>@post.Title</h4></td>
-                            <td>@post.Date?.ToShortDateString()</td>            
+                            <td>@post.Date?.ToShortDateString()</td>
+                            <td>@post.UserName</td>
                         </tr>
                         <tr>
                             <td colspan="2">@post.Content</td>
+                            <td>
+                                <button class="btn btn-primary"
+                                @onclick="(() => EditPost(post))">
+                                    Edit
+                                </button>
+                            </td>
                         </tr>
                     }
+                    @*The other posts*@
                     @foreach (var post in forumposts_not_user)
                     {
                         <tr>
                             <td><h4>@post.Title</h4></td>
                             <td>@post.Date?.ToShortDateString()</td>
+                            <td>@post.UserName</td>
                         </tr>
                         <tr>
                             <td colspan="2">@post.Content</td>
+                            <td></td>
                         </tr>
                     }
                 </tbody>
             </table>
+            <p>
+                <!-- Add a new post -->
+                <button class="btn btn-success"
+                    @onclick="AddNewPost">
+                    Add New Post
+                </button>
+            </p>
         }
     </Authorized>
     <!-- Show this section if the user is not logged in -->
@@ -87,4 +107,96 @@
         forumposts = await @Service.GetPostsAsync(UserIdentityName);
         forumposts_not_user = await @Service.GetOtherPostsAsync(UserIdentityName);
     }
+
+    //Create a new post
+    Posts objPosts = new Posts();
+    bool ShowPopup = false;
+    void ClosePopup()
+    {
+        // Close the Popup
+        ShowPopup = false;
+    }
+    void AddNewPost()
+    {
+        // Make new forecast
+        objPosts = new Posts();
+        // Set Id to 0 so we know it is a new record
+        objPosts.Pid = 0;
+        // Open the Popup
+        ShowPopup = true;
+    }
+    void EditPost(Posts post)
+    {
+        // Set the selected post
+        // as the current post
+        objPosts = post;
+        // Open the Popup
+        ShowPopup = true;
+    }
+
+
+    async Task SavePost()
+    {
+        // Close the Popup
+        ShowPopup = false;
+        // A new forecast will have the Id set to 0
+        if (objPosts.Pid == 0)
+        {
+            // Create new forecast
+            Posts objNewPosts = new Posts();
+            objNewPosts.Date = System.DateTime.Now;
+            objNewPosts.Title = objPosts.Title;
+            objNewPosts.Content = objPosts.Content;
+            objNewPosts.UserName = UserIdentityName;
+            // Save the result
+            var result =
+            @Service.CreatePostAsync(objNewPosts);
+        }
+        else
+        {
+            // This is an update
+            var result =
+            @Service.UpdatePostsAsync(objPosts);
+
+        }
+        // Get the posts for the current user
+        forumposts =
+        await @Service.GetPostsAsync(UserIdentityName);
+    }
+
+
+
+}
+
+@if (ShowPopup)
+{
+    <!-- This is the popup to create or edit a post -->
+    <div class="modal" tabindex="-1" style="display:block" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Edit Post</h3>
+                    <!-- Button to close the popup -->
+                    <button type="button" class="close"
+                        @onclick="ClosePopup">
+                        <span aria-hidden="true">X</span>
+                    </button>
+                </div>
+                <!-- Edit form for the current forecast -->
+                <div class="modal-body">
+                    <input class="form-control" type="text"
+                       placeholder="Title"
+                       @bind="objPosts.Title" /> 
+                    <textarea class="form-control" @bind="objPosts.Content" type="text"
+                         placeholder="Write your post..." />
+                       <br />
+                    <!-- Button to save the forecast -->
+                    <button class="btn btn-success"
+                        @onclick="SavePost">
+                        Save
+                    </button>&nbsp;
+                </div>
+            </div>
+        </div>
+    </div>
 }
