@@ -43,6 +43,16 @@
                             <td colspan="2">@post.Content</td>
                         </tr>
                     }
+                    @foreach (var post in forumposts_not_user)
+                    {
+                        <tr>
+                            <td><h4>@post.Title</h4></td>
+                            <td>@post.Date?.ToShortDateString()</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">@post.Content</td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         }
@@ -59,6 +69,7 @@
     [CascadingParameter]
     private Task<AuthenticationState>? authenticationStateTask { get; set; }
     List<Posts> forumposts = new List<Posts>();
+    List<Posts> forumposts_not_user = new List<Posts>();
     private string UserIdentityName = "";
     protected override async Task OnInitializedAsync()
     {
@@ -71,8 +82,9 @@
                 UserIdentityName = user.Identity.Name ?? "";
             }
         }
-        // Get the forecasts for the current user
-        // We access WeatherForecastService using @Service
+        // Get the posts
+        // We access MyForumService using @Service
         forumposts = await @Service.GetPostsAsync(UserIdentityName);
+        forumposts_not_user = await @Service.GetOtherPostsAsync(UserIdentityName);
     }
 }
