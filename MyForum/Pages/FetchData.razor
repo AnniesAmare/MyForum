@@ -12,6 +12,23 @@
 *@
 @inherits OwningComponentBase<MyForumService>
 <h1>Posts</h1>
+<style>
+    a {
+        color: #000000;
+        text-decoration: none;
+    }
+
+        a:visited {
+            color: #000000;
+            text-decoration: underline;
+        }
+
+        a:hover {
+            color: #6c2496;
+        }
+
+
+</style>
 <!-- AuthorizeView allows us to only show sections of the page -->
 <!-- based on the security on the current user -->
 <AuthorizeView>

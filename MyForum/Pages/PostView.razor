@@ -12,13 +12,12 @@
     We access WeatherForecastService using @Service
 *@
 @inherits OwningComponentBase<MyForumService>
-<h1>Posts</h1>
+<h1>Post</h1>
 <!-- AuthorizeView allows us to only show sections of the page -->
 <!-- based on the security on the current user -->
 <AuthorizeView>
     <!-- Show this section if the user is logged in -->
     <Authorized>
-        <h4>Hello, @context.User.Identity?.Name!</h4>
         @if ( forumposts == null)
         {
             <!-- Show this if the current user has no data... yet... -->
