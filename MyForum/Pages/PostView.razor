@@ -1,4 +1,5 @@
-﻿@page "/fetchdata"
+﻿@page "/postview"
+@page "/postview/{Pid:int}"
 @using MyForum.Data
 @using MyForum.Data.MyForum
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -38,33 +39,39 @@
                     @*The posts that the logged in user owns*@
                     @foreach (var post in forumposts)
                     {
-                        <tr>
-                            <td><h4>@post.Title</h4></td>
-                            <td>@post.Date?.ToShortDateString()</td>
-                            <td>@post.UserName</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">@post.Content</td>
-                            <td>
-                                <button class="btn btn-primary"
-                                @onclick="(() => EditPost(post))">
-                                    Edit
-                                </button>
-                            </td>
-                        </tr>
+                        @if (Pid == post.Pid)
+                        {      
+                            <tr>
+                                <td><h4>@post.Title</h4></td>
+                                <td>@post.Date?.ToShortDateString()</td>
+                                <td>@post.UserName</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">@post.Content</td>
+                                <td>
+                                    <button class="btn btn-primary"
+                                    @onclick="(() => EditPost(post))">
+                                        Edit
+                                    </button>
+                                </td>
+                            </tr>
+                        }
                     }
                     @*The other posts*@
                     @foreach (var post in forumposts_not_user)
                     {
-                        <tr>
-                            <td><h4>@post.Title</h4></td>
-                            <td>@post.Date?.ToShortDateString()</td>
-                            <td>@post.UserName</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">@post.Content</td>
+                        @if (Pid == post.Pid)
+                        {
+                            <tr>
+                                <td><h4>@post.Title</h4></td>
+                                <td>@post.Date?.ToShortDateString()</td>
+                                <td>@post.UserName</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">@post.Content</td>
                             <td></td>
-                        </tr>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
@@ -107,6 +114,10 @@
         forumposts = await @Service.GetPostsAsync(UserIdentityName);
         forumposts_not_user = await @Service.GetOtherPostsAsync(UserIdentityName);
     }
+    // Getting and setting the Pid
+    [Parameter]
+    public int Pid { get; set; } = 1;
+
 
     //Create a new post
     Posts objPosts = new Posts();
