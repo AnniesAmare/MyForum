@@ -26,9 +26,8 @@
         a:hover {
             color: #6c2496;
         }
-
-
 </style>
+
 <!-- AuthorizeView allows us to only show sections of the page -->
 <!-- based on the security on the current user -->
 <AuthorizeView>
@@ -158,7 +157,7 @@
         }
         // Get the posts for the current user
         forumposts =
-        await @Service.GetPostsAsync(UserIdentityName);
+        await @Service.GetAllPostsAsync();
     }
 
     //Delete a post
@@ -170,7 +169,7 @@
         var result = @Service.DeletePostAsync(objPosts);
         // Get the posts for the current user
         forumposts =
-        await @Service.GetPostsAsync(UserIdentityName);
+        await @Service.GetAllPostsAsync();
     }
 }
 

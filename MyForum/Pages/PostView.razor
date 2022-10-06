@@ -2,6 +2,7 @@
 @page "/postview/{Pid:int}"
 @using MyForum.Data
 @using MyForum.Data.MyForum
+@inject NavigationManager NavManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @*
     Using OwningComponentBase ensures that the service and related services
@@ -37,41 +38,26 @@
                 <tbody>
                     @*The posts that the logged in user owns*@
                     @foreach (var post in forumposts)
-                    {
-                        @if (Pid == post.Pid)
-                        {      
-                            <tr>
-                                <td><h4>@post.Title</h4></td>
-                                <td>@post.Date?.ToShortDateString()</td>
-                                <td>@post.UserName</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2">@post.Content</td>
-                                <td>
+                    {     
+                        <tr>
+                            <td><h4>@post.Title</h4></td>
+                            <td>@post.Date?.ToShortDateString()</td>
+                            <td>@post.UserName</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">@post.Content</td>
+                            <td>
+                                @if (post.UserName == UserIdentityName)
+                                {
                                     <button class="btn btn-primary"
                                     @onclick="(() => EditPost(post))">
                                         Edit
                                     </button>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    @*The other posts*@
-                    @foreach (var post in forumposts_not_user)
-                    {
-                        @if (Pid == post.Pid)
-                        {
-                            <tr>
-                                <td><h4>@post.Title</h4></td>
-                                <td>@post.Date?.ToShortDateString()</td>
-                                <td>@post.UserName</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2">@post.Content</td>
-                            <td></td>
-                            </tr>
-                        }
-                    }
+                                }
+
+                            </td>
+                        </tr>                       
+                    }                   
                 </tbody>
             </table>
         }
@@ -84,6 +70,10 @@
 
 @code
 {
+    // Getting and setting the Pid
+    [Parameter]
+    public int Pid { get; set; } = 1;
+
     // AuthenticationState is available as a CascadingParameter
     [CascadingParameter]
     private Task<AuthenticationState>? authenticationStateTask { get; set; }
@@ -103,12 +93,9 @@
         }
         // Get the posts
         // We access MyForumService using @Service
-        forumposts = await @Service.GetPostsAsync(UserIdentityName);
+        forumposts = await @Service.GetPostsByPidAsync(Pid);
         forumposts_not_user = await @Service.GetOtherPostsAsync(UserIdentityName);
     }
-    // Getting and setting the Pid
-    [Parameter]
-    public int Pid { get; set; } = 1;
 
     //Create a new post
     Posts objPosts = new Posts();
@@ -164,7 +151,7 @@
         }
         // Get the posts for the current user
         forumposts =
-        await @Service.GetPostsAsync(UserIdentityName);
+        await @Service.GetPostsByPidAsync(Pid);
     }
 
     //Delete a post
@@ -175,8 +162,7 @@
         // Delete the post
         var result = @Service.DeletePostAsync(objPosts);
         // Get the posts for the current user
-        forumposts =
-        await @Service.GetPostsAsync(UserIdentityName);
+        NavManager.NavigateTo("/fetchdata");
     }
 }
 
