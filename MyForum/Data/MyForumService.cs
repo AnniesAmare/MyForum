@@ -13,6 +13,18 @@ namespace MyForum.Data
         {
             _context = context;
         }
+
+        //Fetch posts that are created by the current user
+        public async Task<List<Posts>>
+            GetAllPostsAsync()
+        {
+            // Get Posts
+            return await _context.Posts
+                 // Use AsNoTracking to disable EF change tracking
+                 // Use ToListAsync to avoid blocking a thread
+                 .AsNoTracking().ToListAsync();
+        }
+
         //Fetch posts that are created by the current user
         public async Task<List<Posts>>
             GetPostsAsync(string strCurrentUser)

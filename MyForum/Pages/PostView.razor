@@ -75,13 +75,6 @@
                     }
                 </tbody>
             </table>
-            <p>
-                <!-- Add a new post -->
-                <button class="btn btn-success"
-                    @onclick="AddNewPost">
-                    Add New Post
-                </button>
-            </p>
         }
     </Authorized>
     <!-- Show this section if the user is not logged in -->
@@ -117,7 +110,6 @@
     // Getting and setting the Pid
     [Parameter]
     public int Pid { get; set; } = 1;
-
 
     //Create a new post
     Posts objPosts = new Posts();

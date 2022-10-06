@@ -31,39 +31,20 @@
                         <th>Title</th>
                         <th>Date</th>
                         <th>Username</th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    @*The posts that the logged in user owns*@
+                    @*Allposts*@
                     @foreach (var post in forumposts)
                     {
                         <tr>
-                            <td><h4>@post.Title</h4></td>
-                            <td>@post.Date?.ToShortDateString()</td>
-                            <td>@post.UserName</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">@post.Content</td>
                             <td>
-                                <button class="btn btn-primary"
-                                @onclick="(() => EditPost(post))">
-                                    Edit
-                                </button>
+                                <a href="/postview/@post.Pid">
+                                    <h4>@post.Title</h4>
+                                </a>
                             </td>
-                        </tr>
-                    }
-                    @*The other posts*@
-                    @foreach (var post in forumposts_not_user)
-                    {
-                        <tr>
-                            <td><h4>@post.Title</h4></td>
                             <td>@post.Date?.ToShortDateString()</td>
                             <td>@post.UserName</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">@post.Content</td>
-                            <td></td>
                         </tr>
                     }
                 </tbody>
@@ -78,10 +59,10 @@
         }
     </Authorized>
     <!-- Show this section if the user is not logged in -->
-    <NotAuthorized>
-        <p>You're not signed in.</p>
-    </NotAuthorized>
-</AuthorizeView>
+        <NotAuthorized>
+            <p>You're not signed in.</p>
+        </NotAuthorized>
+    </AuthorizeView>
 
 @code
 {
@@ -89,7 +70,6 @@
     [CascadingParameter]
     private Task<AuthenticationState>? authenticationStateTask { get; set; }
     List<Posts> forumposts = new List<Posts>();
-    List<Posts> forumposts_not_user = new List<Posts>();
     private string UserIdentityName = "";
     protected override async Task OnInitializedAsync()
     {
@@ -104,8 +84,7 @@
         }
         // Get the posts
         // We access MyForumService using @Service
-        forumposts = await @Service.GetPostsAsync(UserIdentityName);
-        forumposts_not_user = await @Service.GetOtherPostsAsync(UserIdentityName);
+        forumposts = await @Service.GetAllPostsAsync();
     }
 
     //Create a new post
