@@ -14,6 +14,7 @@ namespace MyForum.Data
             _context = context;
         }
 
+        /* POSTS */
         //Fetch posts that are created by the current user
         public async Task<List<Posts>>
             GetPostsByPidAsync(int Pid)
@@ -113,6 +114,47 @@ namespace MyForum.Data
             return Task.FromResult(true);
         }
 
+        /* ANSWERS / COMMENTS */
+        //Fetch posts that are created by the current user
+        public async Task<List<Comments>>
+            GetAnswersByPidAsync(int Pid)
+        {
+            // Get Posts
+            return await _context.Comments
+                 .Where(x => x.Pid == Pid)
+                 // Use AsNoTracking to disable EF change tracking
+                 // Use ToListAsync to avoid blocking a thread
+                 .AsNoTracking().ToListAsync();
+        }
+        //Create a Comment
+        public Task<Comments>
+         CreateCommentsAsync(Comments objComment)
+        {
+            _context.Comments.Add(objComment);
+            _context.SaveChanges();
+            return Task.FromResult(objComment);
+        }
+
+
+        //Delte a comment
+        public Task<bool>
+        DeleteAnswersAsync(Comments objComment)
+        {
+            var ExistingComments =
+                _context.Comments
+                .Where(x => x.Cid == objComment.Cid)
+                .FirstOrDefault();
+            if (ExistingComments != null)
+            {
+                _context.Comments.Remove(ExistingComments);
+                _context.SaveChanges();
+            }
+            else
+            {
+                return Task.FromResult(false);
+            }
+            return Task.FromResult(true);
+        }
 
 
     }

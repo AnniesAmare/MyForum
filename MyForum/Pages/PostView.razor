@@ -7,10 +7,10 @@
 @*
     Using OwningComponentBase ensures that the service and related services
     that share its scope are disposed with the component.
-    Otherwise DbContext in ForecastService will live for the life of the
+    Otherwise DbContext in MyForumService will live for the life of the
     connection, which may be problematic if clients stay
     connected for a long time.
-    We access WeatherForecastService using @Service
+    We access MyForumService using @Service
 *@
 @inherits OwningComponentBase<MyForumService>
 <h1>Post</h1>
@@ -57,7 +57,10 @@
 
                             </td>
                         </tr>                       
-                    }                   
+                    }
+                        <tr>
+                            <td colspan="2"><AnswerView Answer_Pid=Pid/> </td>
+                        </tr>
                 </tbody>
             </table>
         }
@@ -78,7 +81,6 @@
     [CascadingParameter]
     private Task<AuthenticationState>? authenticationStateTask { get; set; }
     List<Posts> forumposts = new List<Posts>();
-    List<Posts> forumposts_not_user = new List<Posts>();
     private string UserIdentityName = "";
     protected override async Task OnInitializedAsync()
     {
@@ -94,7 +96,6 @@
         // Get the posts
         // We access MyForumService using @Service
         forumposts = await @Service.GetPostsByPidAsync(Pid);
-        forumposts_not_user = await @Service.GetOtherPostsAsync(UserIdentityName);
     }
 
     //Create a new post
@@ -149,7 +150,7 @@
             var result =
             @Service.UpdatePostsAsync(objPosts);
         }
-        // Get the posts for the current user
+        // Get the posts for the current page
         forumposts =
         await @Service.GetPostsByPidAsync(Pid);
     }

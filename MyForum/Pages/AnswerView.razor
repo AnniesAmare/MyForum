@@ -1,0 +1,166 @@
+﻿@using MyForum.Data
+@using MyForum.Data.MyForum
+@inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inherits OwningComponentBase<MyForumService>
+<AuthorizeView>
+    <Authorized>
+        @if (forumcomments == null)
+        {
+            <!-- Show this if the current user has no data... yet... -->
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Comment</th>
+                        <th>Username</th>
+                        <th>Date</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var comment in forumcomments)
+                    {
+                        <tr>
+                            <td>@comment.Content</td>
+                            <td>@comment.UserName</td>
+                            <td>@comment.Date?.ToShortDateString()</td>
+                            <td>
+                                @if (@comment.UserName == UserIdentityName)
+                                {
+                                    <button class="btn btn-danger"
+                                        @onclick="(() => DeleteComment(comment))">
+                                        Delete
+                                    </button>
+                                }
+
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <p>
+                    <!-- Add a new comment -->
+                    <button class="btn btn-success"
+                        @onclick="AddNewComment">
+                        Add Comment
+                    </button>
+                </p>
+            </table>
+        }
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    // AuthenticationState is available as a CascadingParameter
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+    private string UserIdentityName = "";
+    List<Comments> forumcomments = new List<Comments>();
+
+    //Getting the pid
+    [Parameter]
+    public int Answer_Pid { get; set; } = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the current user
+        if (authenticationStateTask != null)
+        {
+            var user = (await authenticationStateTask).User;
+            if (user.Identity != null)
+            {
+                UserIdentityName = user.Identity.Name ?? "";
+            }
+        }
+        // Get the posts
+        // We access MyForumService using @Service
+        forumcomments = await @Service.GetAnswersByPidAsync(Answer_Pid);
+    }
+
+    Comments objComment = new Comments();
+    bool ShowPopup = false;
+    void ClosePopup()
+    {
+        // Close the Popup
+        ShowPopup = false;
+    }
+    void AddNewComment()
+    {
+        // Make new post
+        objComment = new Comments();
+        // Set Id to 0 so we know it is a new record
+        objComment.Cid = 0;
+        // Open the Popup
+        ShowPopup = true;
+    }
+
+    async Task SaveComment()
+    {
+        // Close the Popup
+        ShowPopup = false;
+        // A new forecast will have the Id set to 0
+        if (objComment.Cid == 0)
+        {
+            // Create new forecast
+            Comments objNewComment = new Comments();
+            objNewComment.Date = System.DateTime.Now;
+            objNewComment.Content = objComment.Content;
+            objNewComment.UserName = UserIdentityName;
+            objNewComment.Pid = Answer_Pid;
+            // Save the result
+            var result =
+            @Service.CreateCommentsAsync(objNewComment);
+        }
+        else
+        {
+            // This is an update
+            var result = @Service.GetAnswersByPidAsync(Answer_Pid);
+        }
+        // Get the posts for the current user
+        forumcomments = await @Service.GetAnswersByPidAsync(Answer_Pid);
+    }
+
+
+    //Delete a post
+    async Task DeleteComment(Comments comment)
+    {
+        objComment = comment;
+        // Delete the post
+        var result = @Service.DeleteAnswersAsync(objComment);
+        //Update
+        forumcomments = await @Service.GetAnswersByPidAsync(Answer_Pid);
+    }
+}
+
+@if (ShowPopup)
+{
+    <!-- This is the popup to create or edit a post -->
+    <div class="modal" tabindex="-1" style="display:block" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Add Comment</h3>
+                    <!-- Button to close the popup -->
+                    <button type="button" class="close"
+                        @onclick="ClosePopup">
+                        <span aria-hidden="true">X</span>
+                    </button>
+                </div>
+                <!-- Edit form for the current forecast -->
+                <div class="modal-body">
+                    <textarea class="form-control" @bind="objComment.Content" type="text"
+                          placeholder="Write your post..." />
+                    <br />
+                    <!-- Button to save the forecast -->
+                    <button class="btn btn-success"
+                        @onclick="SaveComment">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
